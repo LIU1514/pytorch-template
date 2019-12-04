@@ -10,10 +10,10 @@ def show_sample(data):
     
     numSamples = len(data)
     ix = int((numSamples-1)*np.random.rand())
-    sample, label = data[ix]
-    print(sample)
-    print(label)
-    print(sample.size(), label.size())
+    inp, trgt = data[ix]
+    print(inp)
+    print(trgt)
+    print(inp.size(), trgt.size())
     return
 
 
@@ -24,9 +24,5 @@ def prepare_input(file):
     space for documentation
     """
     
-    return sample, label
+    return inp, trgt
 
-
-if __name__ == '__main__':
-    
-    #testing code

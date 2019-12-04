@@ -25,21 +25,10 @@ class MyNet(nn.Module):
                 nn.init.xavier_normal_(m.weight, gain=nn.init.calculate_gain('relu'))
         return
 
-    def forward(self, x):
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = self.maxpool1(x)
-        x = self.fc1(x)
-        x = self.drop1(x)
-        return x
+    def forward(self, inputBatch):
+        batch = F.relu(self.bn1(self.conv1(inputBatch)))
+        batch = self.maxpool1(batch)
+        batch = self.fc1(batch)
+        outputBatch = self.drop1(batch)
+        return outputBatch
 
-
-
-if __name__ == '__main__':
-    
-    #testing the functionalities
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = MyNet().to(device)
-    T, N, C = 42, 8, 321
-    inp = torch.rand(T, N, C).to(device)
-    out = model(inp)
-    print(out.size())

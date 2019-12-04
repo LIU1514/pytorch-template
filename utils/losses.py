@@ -23,14 +23,10 @@ class MyLoss(nn.Module):
         return loss
 
        
-    def forward(self, out, target, model):
+    def forward(self, outputBatch, targetBatch, model):
         regLoss = self.l2_regularization(model)
-        mainLoss = self.main_loss(out, target)
+        mainLoss = self.main_loss(outputBatch, targetBatch)
         loss = mainLoss + self.lambd*regLoss
         return loss
 
 
-
-if __name__ == '__main__':
-
-    #code for testing the loss function

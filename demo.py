@@ -31,19 +31,20 @@ for root, dirs, files in os.walk(args["CODE_DIRECTORY"] + "/demo"):
     for file in files:
         if file.endswith(".ext"):
 
-            sample, label = prepare_input(file)
-            sample = data_transforms(sample)
-            inp = sample.view(1, sample.size(0), sample.size(1))
-            target = label.view(1, label.size(0))
+            inp, trgt = prepare_input(file)
+            inp = data_transforms(inp)
+            inputBatch = inp.view(1, inp.size(0), inp.size(1))
+            targetBatch = trgt.view(1, trgt.size(0))
 
-            inp, target = (inp.float()).to(device), target.to(device)    
+            inputBatch, targetBatch = (inputBatch.float()).to(device), targetBatch.to(device)    
             with torch.no_grad():
-                out = model(inp)
-            prediction = decode(out)
+                outputBatch = model(inputBatch)
+            predictionBatch = decode(outputBatch)
+            pred = predictionBatch[0]
 
         print("File: %s" %(os.path.join(root + file)))
-        print("Prediction: %s" %(prediction))
-        print("Target: %s" %(target))
+        print("Prediction: %s" %(pred))
+        print("Target: %s" %(trgt))
         print("\n")
 
 

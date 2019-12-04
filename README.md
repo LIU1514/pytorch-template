@@ -5,7 +5,7 @@
 - Take care of the matrix dimensions, axis and datatypes (Pytorch typecast is different from Numpy). 
 - Take care of variable referencing (whether its by value or by address).
 - Use assert() and keepdim options.
-- List all non-trivial options of any library function even if they take default values for clarity. For self-defined classes and functions, use default values in function definition if they will be mostly constant, so that no parameters are needed to pass when calling them.
+- List all non-trivial options of any function even if they take default values for clarity. 
 - Use space after comma in function parameters for clarity but not in tuples
 - Add shell scripts or links in README for downloading the pretrained weights and the datasets. Add these large folders to `.gitignore` to avoid uploading them.
 
@@ -20,9 +20,12 @@
 - `utils` - Folder for utility functions - loss functions, metrics, decoders and other general functions.
 
 #### Files
+- `checker.py` - A file with checker functions for testing all the modules and functions in the project as well as any other checks to be performed.
 - `config.py` - Configuration options and hyperparameter values.
-- `demo.py` - Python script for running the trained model on the samples in the `demo` folder.
+- `demo.py` - Python script for running the trained model on the samples in the `demo` folder. 
 - `test.py` - Python script to test the trained model on the test set and obtain the loss value and evaluation metric value on the test set.
 - `train.py` - Python script to train the models.
 
 ## Changes Required
+
+

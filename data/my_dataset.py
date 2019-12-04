@@ -23,18 +23,13 @@ class MyDataset(Dataset):
 
     def __getitem__(self, index):
         file = self.datalist[index]
-        sample, label = prepare_input(file)
+        inp, trgt = prepare_input(file)
         if self.transform is not None:
-            sample = self.transform(sample)
-        return sample, label
+            inp = self.transform(inp)
+        return inp, trgt
 
 
     def __len__(self):
         return len(self.datalist)
 
 
-
-
-if __name__ == '__main__':
-
-    #code for testing

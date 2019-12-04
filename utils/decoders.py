@@ -2,16 +2,11 @@ import torch
 import numpy as np
 
 
-def decode(out):
+def decode(outputBatch):
     
     """
     space for documentation
     """
 
-    return prediction
+    return predictionBatch
 
-
-
-if __name__ == '__main__':
-
-    #code for testing

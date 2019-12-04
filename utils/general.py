@@ -27,19 +27,19 @@ def train(model, trainLoader, optimizer, loss_function, device):
     trainingLoss = 0
     trainingMetric = 0
 
-    for batch, (inp, target) in enumerate(trainLoader):
+    for batch, (inputBatch, targetBatch) in enumerate(trainLoader):
         
-        inp, target = (inp.float()).to(device), target.to(device)
+        inputBatch, targetBatch = (inputBatch.float()).to(device), targetBatch.to(device)
         
         optimizer.zero_grad()
-        out = model(inp)
-        loss = loss_function(out, target)
+        outputBatch = model(inputBatch)
+        loss = loss_function(outputBatch, targetBatch)
         loss.backward()
         optimizer.step()
 
         trainingLoss = trainingLoss + loss.item()
-        prediction = decode(out.detach())
-        trainingMetric = trainingMetric + compute_metric(prediction, target)
+        predictionBatch = decode(outputBatch.detach())
+        trainingMetric = trainingMetric + compute_metric(predictionBatch, targetBatch)
     
     trainingLoss = trainingLoss/len(trainLoader)
     trainingMetric = trainingMetric/len(trainLoader)
@@ -58,24 +58,18 @@ def evaluate(model, evalLoader, loss_function, device):
     evalMetric = 0
     
     with torch.no_grad():
-        for batch, (inp, target) in enumerate(evalLoader):
+        for batch, (inputBatch, targetBatch) in enumerate(evalLoader):
             
-            inp, target = (inp.float()).to(device), target.to(device)
+            inputBatch, targetBatch = (inputBatch.float()).to(device), targetBatch.to(device)
             
-            out = model(inp)
-            loss = loss_function(out, target)
+            outputBatch = model(inputBatch)
+            loss = loss_function(outputBatch, targetBatch)
 
             evalLoss = evalLoss + loss.item()
-            prediction = decode(out)
-            evalMetric = evalMetric + compute_metric(prediction, target)
+            predictionBatch = decode(outputBatch)
+            evalMetric = evalMetric + compute_metric(predictionBatch, targetBatch)
 
     evalLoss = evalLoss/len(evalLoader)
     evalMetric = evalMetric/len(evalLoader)
     return evalLoss, evalMetric
 
-
-
-
-if __name__ == '__main__':
-    
-    #code for testing the functions
