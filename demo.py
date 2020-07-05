@@ -1,13 +1,18 @@
 import torch
-import torch.nn as nn
+import random
 import numpy as np
+import os
 
 from config import args
 from models.my_net import MyNet
-from data.utils import prepare_input
-from utils.decoders import decode
+from data.tools import prepare_input
+from essentials.decoders import decode
+from essentials.metrics import compute_metric
+from essentials.pprocs import preprocess_sample
 
 
+
+random.seed(args["SEED"])
 np.random.seed(args["SEED"])
 torch.manual_seed(args["SEED"])
 gpuAvailable = torch.cuda.is_available()
@@ -15,37 +20,47 @@ device = torch.device("cuda" if gpuAvailable else "cpu")
 
 
 
-print("\nRunning Demo .... \n")
-print("Trained Model File: %s\n" %(args["TRAINED_MODEL_FILE"]))
-print("Demo Directory: %s\n\n" %(args["CODE_DIRECTORY"] + "/demo"))
+if args["TRAINED_WEIGHTS_FILE"] is not None:
+
+    print("Trained Weights File: %s" %(args["TRAINED_WEIGHTS_FILE"]))
+    print("Demo Directory: %s" %(args["DEMO_DIRECTORY"]))
+
+    model = MyNet()
+    model.load_state_dict(torch.load(args["CODE_DIRECTORY"] + args["TRAINED_WEIGHTS_FILE"], map_location=device))
+    model.to(device)
 
 
-model = MyNet().to(device)
-model.load_state_dict(torch.load(args["CODE_DIRECTORY"] + args["TRAINED_MODEL_FILE"]))
-model.to(device)
-model.eval()
-data_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.5, 0.5, 0.5],std=[0.5, 0.5, 0.5])])
+    print("Running Demo ....")
 
+    for root, dirs, files in os.walk(args["DEMO_DIRECTORY"]):
+        for file in files:
 
-for root, dirs, files in os.walk(args["CODE_DIRECTORY"] + "/demo"):
-    for file in files:
-        if file.endswith(".ext"):
+            preprocess_sample(file)
 
             inp, trgt = prepare_input(file)
-            inp = data_transforms(inp)
-            inputBatch = inp.view(1, inp.size(0), inp.size(1))
-            targetBatch = trgt.view(1, trgt.size(0))
+            inputBatch = torch.unsqueeze(inp, dim=0)
+            targetBatch = torch.unsqueeze(trgt, dim=0)
 
-            inputBatch, targetBatch = (inputBatch.float()).to(device), targetBatch.to(device)    
+            inputBatch, targetBatch = (inputBatch.float()).to(device), targetBatch.to(device)
+
+            model.eval()
             with torch.no_grad():
                 outputBatch = model(inputBatch)
+
             predictionBatch = decode(outputBatch)
-            pred = predictionBatch[0]
+            metricValue = compute_metric(predictionBatch, targetBatch)
 
-        print("File: %s" %(os.path.join(root + file)))
-        print("Prediction: %s" %(pred))
-        print("Target: %s" %(trgt))
-        print("\n")
+            pred = predictionBatch[0][:]
+            trgt = targetBatch[0][:]
+
+            print("File: %s" %(file))
+            print("Prediction: %s" %(pred))
+            print("Target: %s" %(trgt))
+            print("Metric: %.3f" %(metricValue))
+            print("\n")
+
+    print("Demo Completed.")
 
 
-print("\nDemo Completed.\n")
+else:
+    print("Path to trained weights file not specified.")

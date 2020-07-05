@@ -1,38 +1,40 @@
 args = dict()
 
 
+
 #project structure
 args["CODE_DIRECTORY"] = "absolute path to code directory"
 args["DATA_DIRECTORY"] = "absolute path to data directory"
-args["PRETRAINED_MODEL_FILE"] = "relative path to pretrained model file"
-args["TRAINED_MODEL_FILE"] = "relative path to trained model file"
+args["DEMO_DIRECTORY"] = "absolute path to demo directory"
+args["PRETRAINED_WEIGHTS_FILE"] = "/saved/weights/pretrained_weights.pt"
+args["TRAINED_WEIGHTS_FILE"] = "/saved/weights/trained_weights.pt"
 
 
 #data
 args["VALIDATION_SPLIT"] = 0.05
-args["NUM_WORKERS"] = 8
+args["NUM_WORKERS"] = 4
 
 
 #training
 args["SEED"] = 10
-args["BATCH_SIZE"] = 8
+args["BATCH_SIZE"] = 4
 args["NUM_EPOCHS"] = 15
 args["SAVE_FREQUENCY"] = 5
 
 
 #optimizer and scheduler
 args["LEARNING_RATE"] = 0.001
-args["MOMENTUM1"] = 0.9     
-args["MOMENTUM2"] = 0.999 
+args["MOMENTUM1"] = 0.9
+args["MOMENTUM2"] = 0.999
 args["LR_DECAY"] = 0.95
 
 
-#loss function
-args["LAMBDA"] = 10
+#loss
+args["LAMBDA"] = 0.03
 
 
 
 if __name__ == '__main__':
-    
-    for key,value in args.items():
+
+    for key, value in args.items():
         print(str(key) + " : " + str(value))

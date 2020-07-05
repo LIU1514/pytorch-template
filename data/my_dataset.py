@@ -1,35 +1,27 @@
-import torch
 from torch.utils.data import Dataset
 import numpy as np
 
-from utils import prepare_input
+from .tools import prepare_input
 
 
 
 class MyDataset(Dataset):
 
     """
-    Space for documentation
+    Documentation: description, input, output
     """
-    
-    def __init__(self, datapath, dataset, transforms=None):
+
+    def __init__(self, dataset, datadir):
         super(MyDataset, self).__init__()
-        with open(dataDir + "/" + dataset + ".txt", "r") as f:
-            lines = f.readlines()
-        self.datalist = [dataDir + "/main/" + line.strip().split(" ")[0] for line in lines]
-        self.transforms = transforms
+        self.datalist = datalist
         return
-        
+
 
     def __getitem__(self, index):
         file = self.datalist[index]
         inp, trgt = prepare_input(file)
-        if self.transform is not None:
-            inp = self.transform(inp)
         return inp, trgt
 
 
     def __len__(self):
         return len(self.datalist)
-
-

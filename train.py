@@ -2,21 +2,22 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
-from torchvision import transforms
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import os, shutil
+import random
 
 from config import args
-from models.my_net import MyNet
 from data.my_dataset import MyDataset
-from utils.losses import MyLoss
-from utils.general import num_params, train, evaluate
+from models.my_net import MyNet
+from essentials.losses import MyLoss, L2Regularizer
+from essentials.core import num_params, train, evaluate
 
 
 
 matplotlib.use("Agg")
+random.seed(args["SEED"])
 np.random.seed(args["SEED"])
 torch.manual_seed(args["SEED"])
 gpuAvailable = torch.cuda.is_available()
@@ -24,26 +25,23 @@ device = torch.device("cuda" if gpuAvailable else "cpu")
 kwargs = {"num_workers": args["NUM_WORKERS"], "pin_memory": True} if gpuAvailable else {}
 
 
-data_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.5, 0.5, 0.5],std=[0.5, 0.5, 0.5])])
-trainData = MyDataset(dataset="train", transforms=data_transforms)
-valDataSize = int(args["VALIDATION_SPLIT"]*len(trainData))
-trainDataSize = len(trainData) - valDataSize
-trainData, valData = random_split(trainData, [trainDataSize, valDataSize])
-
+trainData = MyDataset("train", datadir=args["DATA_DIRECTORY"])
+valSize = int(args["VALIDATION_SPLIT"]*len(trainData))
+trainSize = len(trainData) - valSize
+trainData, valData = random_split(trainData, [trainSize, valSize])
 trainLoader = DataLoader(trainData, batch_size=args["BATCH_SIZE"], shuffle=True, **kwargs)
 valLoader = DataLoader(valData, batch_size=args["BATCH_SIZE"], shuffle=True, **kwargs)
 
 
-
-model = MyNet().to(device)
+model = MyNet()
+model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=args["LEARNING_RATE"], betas=(args["MOMENTUM1"], args["MOMENTUM2"]))
 scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=args["LR_DECAY"])
 loss_function = MyLoss()
-
+regularizer = L2Regularizer(lambd=args["LAMBDA"])
 
 
 if os.path.exists(args["CODE_DIRECTORY"] + "/checkpoints"):
-    
     while True:
         ch = input("Continue and remove the 'checkpoints' directory? y/n: ")
         if ch == "y":
@@ -55,18 +53,16 @@ if os.path.exists(args["CODE_DIRECTORY"] + "/checkpoints"):
     shutil.rmtree(args["CODE_DIRECTORY"] + "/checkpoints")
 
 os.mkdir(args["CODE_DIRECTORY"] + "/checkpoints")
-os.mkdir(args["CODE_DIRECTORY"] + "/checkpoints/models")
 os.mkdir(args["CODE_DIRECTORY"] + "/checkpoints/plots")
+os.mkdir(args["CODE_DIRECTORY"] + "/checkpoints/weights")
 
 
-
-if args["PRETRAINED_MODEL_FILE"] is not None:
-
-    print("\n\nPre-trained Model File: %s" %(args["PRETRAINED_MODEL_FILE"]))
-    print("\nLoading the pre-trained model .... \n")
-    model.load_state_dict(torch.load(args["CODE_DIRECTORY"] + args["PRETRAINED_MODEL_FILE"]))
+if args["PRETRAINED_WEIGHTS_FILE"] is not None:
+    print("Pretrained Weights File: %s" %(args["PRETRAINED_WEIGHTS_FILE"]))
+    print("Loading the pretrained weights ....")
+    model.load_state_dict(torch.load(args["CODE_DIRECTORY"] + args["PRETRAINED_WEIGHTS_FILE"], map_location=device))
     model.to(device)
-    print("\nLoading Done.\n")    
+    print("Loading Done.")
 
 
 
@@ -76,31 +72,32 @@ trainingMetricCurve = list()
 validationMetricCurve = list()
 
 
-print("\nTraining the model .... \n")
-
 numTotalParams, numTrainableParams = num_params(model)
 print("Number of total parameters in the model = %d" %(numTotalParams))
-print("Number of trainable parameters in the model = %d\n" %(numTrainableParams))
+print("Number of trainable parameters in the model = %d" %(numTrainableParams))
+
+
+print("Training the model ....")
 
 for epoch in range(1, args["NUM_EPOCHS"]+1):
-    
-    trainingLoss, trainingMetric = train(model, trainLoader, optimizer, loss_function, device)
+
+    trainingLoss, trainingMetric = train(model, trainLoader, optimizer, loss_function, regularizer, device, trainParams)
     trainingLossCurve.append(trainingLoss)
     trainingMetricCurve.append(trainingMetric)
 
-    validationLoss, validationMetric = evaluate(model, valLoader, loss_function, device)
+    validationLoss, validationMetric = evaluate(model, valLoader, loss_function, regularizer, device, evalParams)
     validationLossCurve.append(validationLoss)
     validationMetricCurve.append(validationMetric)
 
+    print("Epoch: %03d || Tr.Loss: %.6f  Val.Loss: %.6f || Tr.Metric: %.3f  Val.Metric: %.3f"
+          %(epoch, trainingLoss, validationLoss, trainingMetric, validationMetric))
+
     scheduler.step()
 
-    print("Epoch: %d \t Tr.Loss: %.6f \t Val.Loss: %.6f \t Tr.Metric: %.3f \t Val.Metric: %.3f" 
-          %(epoch, trainingLoss, validationLoss, trainingMetric, validationMetric))
-    
 
-    if (epoch % args["SAVE_FREQUENCY"] == 0) or (epoch == args["NUM_EPOCHS"]):
-        
-        savePath = args["CODE_DIRECTORY"] + "/checkpoints/models/epoch_{:04d}-metric_{:.3f}.pt".format(epoch, validationMetric)
+    if ((epoch % args["SAVE_FREQUENCY"] == 0) or (epoch == args["NUM_EPOCHS"]-1)) and (epoch != 0):
+
+        savePath = args["CODE_DIRECTORY"] + "/checkpoints/weights/epoch_{:04d}-metric_{:.3f}.pt".format(epoch, validationMetric)
         torch.save(model.state_dict(), savePath)
 
         plt.figure()
@@ -124,4 +121,4 @@ for epoch in range(1, args["NUM_EPOCHS"]+1):
         plt.close()
 
 
-print("\nTraining Done.\n")
+print("Training Done.")

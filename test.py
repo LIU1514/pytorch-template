@@ -1,38 +1,49 @@
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 import numpy as np
+import random
 
 from config import args
-from models.my_net import MyNet
 from data.my_dataset import MyDataset
-from utils.losses import MyLoss
-from utils.general import evaluate
+from models.my_net import MyNet
+from essentials.losses import MyLoss, L2Regularizer
+from essentials.core import evaluate
 
 
 
+random.seed(args["SEED"])
 np.random.seed(args["SEED"])
 torch.manual_seed(args["SEED"])
 gpuAvailable = torch.cuda.is_available()
 device = torch.device("cuda" if gpuAvailable else "cpu")
 kwargs = {"num_workers": args["NUM_WORKERS"], "pin_memory": True} if gpuAvailable else {}
 
-data_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.5, 0.5, 0.5],std=[0.5, 0.5, 0.5])])
-testData = MyDataset(dataset="test", transforms=data_transforms)
-testLoader = DataLoader(testData, batch_size=args["BATCH_SIZE"], shuffle=True, **kwargs)
-
-model = MyNet().to(device)
-loss_function = MyLoss()
 
 
+if args["TRAINED_WEIGHTS_FILE"] is not None:
 
-if args["TRAINED_MODEL_FILE"] is not None:
+    testData = MyDataset("test", datadir=args["DATA_DIRECTORY"])
+    testLoader = DataLoader(testData, batch_size=args["BATCH_SIZE"], shuffle=True, **kwargs)
 
-    print("\n\nTrained Model File: %s" %(args["TRAINED_MODEL_FILE"]))
-    print("\nTesting the trained model .... \n")
 
-    model.load_state_dict(torch.load(args["CODE_DIRECTORY"] + args["TRAINED_MODEL_FILE"]))
+    print("Trained Weights File: %s" %(args["TRAINED_WEIGHTS_FILE"]))
+
+    model = MyNet()
+    model.load_state_dict(torch.load(args["CODE_DIRECTORY"] + args["TRAINED_WEIGHTS_FILE"], map_location=device))
     model.to(device)
-    testLoss, testMetric = evaluate(model, testLoader, loss_function, device)
-    
-    print("Test Loss: %.6f, Test Metric: %.3f" %(testLoss, testMetric))
-    print("\nTesting Done.\n")    
+
+    loss_function = MyLoss()
+    regularizer = L2Regularizer(lambd=args["LAMBDA"])
+
+
+    print("Testing the trained model ....")
+
+    testLoss, testMetric = evaluate(model, testLoader, loss_function, regularizer, device, testParams)
+
+    print("Test Loss: %.6f || Test Metric: %.3f" %(testLoss, testMetric))
+    print("Testing Done.")
+
+
+else:
+    print("Path to the trained weights file not specified.")

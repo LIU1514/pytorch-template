@@ -2,11 +2,11 @@ import torch
 import numpy as np
 
 
+
 def decode(outputBatch):
-    
+
     """
-    space for documentation
+    Documentation: description, input, output
     """
 
     return predictionBatch
-
