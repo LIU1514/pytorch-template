@@ -37,3 +37,8 @@ class L2Regularizer(nn.Module):
                 loss = loss + torch.sum(p*p)
         loss = self.lambd*loss
         return loss
+
+
+
+if __name__ == "__main__":
+    exit()

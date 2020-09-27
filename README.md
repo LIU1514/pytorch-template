@@ -7,13 +7,16 @@ pytorch-template/
 │
 │
 ├── data/ - custom dataset class definitions and data-related functions
+│   ├── __init__.py
 │   ├── my_dataset.py
 │   └── tools.py
 │
 ├── models/ - model class definitions
+│   ├── __init__.py
 │   └── my_net.py
 │
 ├── essentials/
+│   ├── __init__.py
 │   ├── pprocs.py - preprocessing functions
 │   ├── core.py - train and evaluate the models
 │   ├── losses.py - custom loss class definitions
@@ -32,7 +35,7 @@ pytorch-template/
 │
 ├── config.py - configuration options and hyperparameter values
 │
-├── inspect.py - functions to test modules and perform other checks
+├── checks.py - functions to test modules and perform other checks
 │
 ├── preprocess.py - preprocess all data samples
 │

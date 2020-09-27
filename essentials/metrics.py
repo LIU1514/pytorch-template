@@ -10,3 +10,8 @@ def compute_metric(predictionBatch, targetBatch):
     """
 
     return metricValue
+
+
+
+if __name__ == "__main__":
+    exit()
