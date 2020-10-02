@@ -19,7 +19,3 @@ def preprocess_sample(file):
     """
 
     return file
-
-
-if __name__ == "__main__":
-    sys.exit()

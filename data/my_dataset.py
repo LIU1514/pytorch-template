@@ -33,7 +33,3 @@ class MyDataset(Dataset):
 
     def __len__(self):
         return len(self.datalist)
-
-
-if __name__ == "__main__":
-    sys.exit()

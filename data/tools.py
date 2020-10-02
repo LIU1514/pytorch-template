@@ -20,7 +20,3 @@ def prepare_input(file):
 
     inp, trgt = file
     return inp, trgt
-
-
-if __name__ == "__main__":
-    sys.exit()

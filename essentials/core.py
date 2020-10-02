@@ -97,7 +97,3 @@ def evaluate(model, evalLoader, criterion, regularizer, device):
     evalLoss = evalLoss / len(evalLoader)
     evalMetric = evalMetric / len(evalLoader)
     return evalLoss, evalMetric
-
-
-if __name__ == "__main__":
-    exit()

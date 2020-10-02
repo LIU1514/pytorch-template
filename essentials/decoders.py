@@ -10,8 +10,3 @@ def decode(outputBatch):
     """
 
     return predictionBatch
-
-
-
-if __name__ == "__main__":
-    exit()

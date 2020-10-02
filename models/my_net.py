@@ -48,7 +48,3 @@ class MyNet(nn.Module):
         batch = self.drop1(batch)
         outputBatch = self.fc1(batch)
         return outputBatch
-
-
-if __name__ == "__main__":
-    sys.exit()
